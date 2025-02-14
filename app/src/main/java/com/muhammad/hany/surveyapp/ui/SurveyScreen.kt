@@ -1,8 +1,5 @@
-@file:OptIn(ExperimentalFoundationApi::class)
-
 package com.muhammad.hany.surveyapp.ui
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,10 +13,10 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Button
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -84,6 +81,8 @@ fun Question(
 
         val answer = survey.answer
         var answerState by remember { mutableStateOf("") }
+        var answerTextFieldError by remember { mutableStateOf(false) }
+
         Box {
             Column(modifier.padding(16.dp)) {
                 QuestionResponse(survey, onRetry = onAnswer)
@@ -94,21 +93,28 @@ fun Question(
 
                 Spacer(Modifier.height(10.dp))
 
-                TextField(
+                OutlinedTextField(
                     value = answer?.answerText ?: answerState,
                     onValueChange = {
                         answerState = it
+                        if (it.isNotBlank()) answerTextFieldError = false
                     },
                     label = { Text("Type here for an Answer") },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = answer == null && !survey.hasError
+                    enabled = answer == null && !survey.hasError,
+                    isError = answerTextFieldError,
+                    supportingText = {
+                        if (answerTextFieldError) Text("You must enter an answer")
+                    }
                 )
 
                 Spacer(Modifier.height(10.dp))
 
                 Button(
                     onClick = {
-                        if (answerState.isNotBlank()) {
+                        if (answerState.isBlank()) {
+                            answerTextFieldError = true
+                        } else {
                             onAnswer(answerState, survey.question.id ?: -1)
                         }
                     },
