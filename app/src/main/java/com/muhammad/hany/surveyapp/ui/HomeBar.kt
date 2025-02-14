@@ -33,12 +33,14 @@ fun HomeBar(
     val navController = LOCAL_NAVIGATOR.current
     val coroutineScope = rememberCoroutineScope()
     TopAppBar(
-        title = { Text(
-            "Question ${pagerState.currentPage + 1}/${pagerState.pageCount}",
-            maxLines = 1,
-            fontSize = 20.sp,
-            modifier = Modifier.fillMaxWidth()
-        ) },
+        title = {
+            Text(
+                "Question ${pagerState.currentPage + 1}/${pagerState.pageCount}",
+                maxLines = 1,
+                fontSize = 20.sp,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primary,
             titleContentColor = MaterialTheme.colorScheme.onPrimary,
@@ -55,20 +57,27 @@ fun HomeBar(
         },
         actions = {
             Row {
-                TextButton(onClick = {
-                    coroutineScope.launch {
-                        pagerState.animateScrollToPage(pagerState.currentPage - 1)
-                    }
+                val nextEnabled = pagerState.currentPage < pagerState.pageCount - 1
+                val previousEnabled = pagerState.currentPage > 0
+                TextButton(
+                    enabled = previousEnabled,
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                        }
 
-                }) {
-                    Text(text = "Previous", color = Color.White)
-                }
-                TextButton(onClick = {
-                    coroutineScope.launch {
-                        pagerState.animateScrollToPage(pagerState.currentPage + 1)
                     }
-                }) {
-                    Text(text = "Next", color = Color.White)
+                ) {
+                    Text(text = "Previous", color = if (previousEnabled) Color.White else Color.Gray)
+                }
+                TextButton(
+                    enabled = nextEnabled,
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                        }
+                    }) {
+                    Text(text = "Next", color = if (nextEnabled) Color.White else Color.Gray)
                 }
             }
         }
