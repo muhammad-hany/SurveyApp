@@ -18,8 +18,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.muhammad.hany.surveyapp.HomeViewModel
 import com.muhammad.hany.surveyapp.ui.model.SurveyQuestion
 import com.muhammad.hany.surveyapp.ui.model.SurveyState
@@ -35,13 +35,13 @@ import com.muhammad.hany.surveyapp.ui.model.SurveyState
 
 @Composable
 fun SurveyScreen(viewModel: HomeViewModel) {
-    val surveyState = viewModel.surveyState.collectAsState()
-    val pagerState = rememberPagerState(pageCount = { surveyState.value.surveyQuestions.size })
+    val surveyState by viewModel.surveyState.collectAsStateWithLifecycle()
+    val pagerState = rememberPagerState(pageCount = { surveyState.surveyQuestions.size })
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            HomeBar(pagerState = pagerState)
+            HomeBar(pagerState = pagerState, surveyState.answeredQuestionsCount)
         }
     ) { innerPadding ->
         Column(
@@ -49,7 +49,7 @@ fun SurveyScreen(viewModel: HomeViewModel) {
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
-            if (surveyState.value.isLoading) {
+            if (surveyState.isLoading) {
                 LinearProgressIndicator(Modifier.fillMaxWidth())
             }
             Question(
@@ -64,7 +64,7 @@ fun SurveyScreen(viewModel: HomeViewModel) {
 
 @Composable
 fun Question(
-    state: State<SurveyState>,
+    state: SurveyState,
     pagerState: PagerState,
     modifier: Modifier,
     onAnswer: (String, Int) -> Unit
@@ -75,13 +75,13 @@ fun Question(
     ) { page ->
 
 
-        val survey = state.value.surveyQuestions.getOrNull(page) ?: return@HorizontalPager
+        val survey = state.surveyQuestions.getOrNull(page) ?: return@HorizontalPager
         val question = survey.question.question ?: return@HorizontalPager
-        // TODO handle empty state here
 
         val answer = survey.answer
         var answerState by remember { mutableStateOf("") }
-        var answerTextFieldError by remember { mutableStateOf(false) }
+        var userStartedInput by remember { mutableStateOf(false) }
+        val answerTextFieldError by remember { derivedStateOf { answerState.isBlank() && userStartedInput } }
 
         Box {
             Column(modifier.padding(16.dp)) {
@@ -97,7 +97,7 @@ fun Question(
                     value = answer?.answerText ?: answerState,
                     onValueChange = {
                         answerState = it
-                        if (it.isNotBlank()) answerTextFieldError = false
+                        if (!userStartedInput) userStartedInput = true
                     },
                     label = { Text("Type here for an Answer") },
                     modifier = Modifier.fillMaxWidth(),
@@ -112,13 +112,12 @@ fun Question(
 
                 Button(
                     onClick = {
-                        if (answerState.isBlank()) {
-                            answerTextFieldError = true
-                        } else {
+                        if (answerState.isNotBlank()) {
                             onAnswer(answerState, survey.question.id ?: -1)
                         }
+                        if (!userStartedInput) userStartedInput = true
                     },
-                    enabled = answer == null && !survey.hasError
+                    enabled = answer == null && !survey.hasError && !answerTextFieldError
                 ) {
                     Text(text = if (answer == null) "Submit" else "Already Submitted")
                 }
