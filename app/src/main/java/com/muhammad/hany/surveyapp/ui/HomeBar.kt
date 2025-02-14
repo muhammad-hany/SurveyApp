@@ -29,13 +29,14 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeBar(
     pagerState: PagerState,
+    numberOfAnsweredQuestions: Int
 ) {
     val navController = LOCAL_NAVIGATOR.current
     val coroutineScope = rememberCoroutineScope()
     TopAppBar(
         title = {
             Text(
-                "Question ${pagerState.currentPage + 1}/${pagerState.pageCount}",
+                "Question $numberOfAnsweredQuestions/${pagerState.pageCount}",
                 maxLines = 1,
                 fontSize = 20.sp,
                 modifier = Modifier.fillMaxWidth()
