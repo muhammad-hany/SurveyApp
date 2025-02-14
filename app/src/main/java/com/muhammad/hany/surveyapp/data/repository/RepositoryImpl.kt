@@ -4,9 +4,11 @@ import com.muhammad.hany.surveyapp.data.api.SurveyApi
 import com.muhammad.hany.surveyapp.data.model.Answer
 import com.muhammad.hany.surveyapp.data.model.ApiState
 import com.muhammad.hany.surveyapp.data.model.Question
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 
 class RepositoryImpl(private val api: SurveyApi) : Repository {
 
@@ -16,7 +18,7 @@ class RepositoryImpl(private val api: SurveyApi) : Repository {
         emit(ApiState.Success(response))
     }.catch {
         emit(ApiState.Error(it))
-    }
+    }.flowOn(Dispatchers.IO)
 
     override suspend fun submitAnswer(answer: Answer): Flow<ApiState<Unit>> = flow {
         emit(ApiState.Loading)
@@ -24,5 +26,5 @@ class RepositoryImpl(private val api: SurveyApi) : Repository {
         emit(ApiState.Success(response))
     }.catch {
         emit(ApiState.Error(it))
-    }
+    }.flowOn(Dispatchers.IO)
 }

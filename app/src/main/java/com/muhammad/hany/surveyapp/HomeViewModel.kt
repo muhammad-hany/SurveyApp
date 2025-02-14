@@ -1,14 +1,19 @@
 package com.muhammad.hany.surveyapp
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.muhammad.hany.surveyapp.data.model.Answer
 import com.muhammad.hany.surveyapp.data.model.ApiState
 import com.muhammad.hany.surveyapp.data.repository.Repository
-import com.muhammad.hany.surveyapp.ui.SurveyState
+import com.muhammad.hany.surveyapp.ui.model.SurveyQuestion
+import com.muhammad.hany.surveyapp.ui.model.SurveyState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class HomeViewModel(
     private val repository: Repository
@@ -21,12 +26,23 @@ class HomeViewModel(
 
     init {
         viewModelScope.launch {
-            repository.getQuestions().collectLatest {
-                when(it) {
-                    is ApiState.Error -> {}
-                    is ApiState.Loading ->{}
+            repository.getQuestions().collectLatest { apiState ->
+                when (apiState) {
+                    is ApiState.Error -> {
+                        _surveyState.emit(currentState.copy(isLoading = false))
+                        // TODO present error state
+                    }
+                    is ApiState.Loading -> {
+                        _surveyState.emit(currentState.copy(isLoading = true))
+                    }
+
                     is ApiState.Success -> {
-                        _surveyState.emit(currentState.copy(questions = it.data))
+                        _surveyState.emit(
+                            currentState.copy(
+                                surveyQuestions = apiState.data.map { SurveyQuestion(it) },
+                                isLoading = false
+                            )
+                        )
                     }
                 }
 
@@ -34,4 +50,54 @@ class HomeViewModel(
         }
     }
 
+    fun submitAnswer(answerText: String, id: Int) {
+        viewModelScope.launch {
+            val answer = Answer(id = id, answerText = answerText)
+            val surveyQuestionIndex =
+                currentState.surveyQuestions.indexOfFirst { it.question.id == id }
+            if (surveyQuestionIndex == -1) return@launch
+
+            repository.submitAnswer(answer).collectLatest { apiState ->
+                when (apiState) {
+                    is ApiState.Error -> {
+                        val error = apiState.throwable.message ?: "Unknown Error"
+                        Log.e("HomeViewModel", "submitAnswer: $error")
+                        val modifiedList = currentState.surveyQuestions.toMutableList()
+                        modifiedList[surveyQuestionIndex] =
+                            modifiedList[surveyQuestionIndex].copy(hasError = true, answer = answer)
+                        _surveyState.emit(
+                            currentState.copy(
+                                isLoading = false,
+                                surveyQuestions = modifiedList
+                            )
+                        )
+                    }
+
+                    is ApiState.Loading -> {
+                        _surveyState.emit(currentState.copy(isLoading = true))
+                    }
+
+                    is ApiState.Success -> {
+                        withContext(Dispatchers.Main) {
+                            val modifiedList = currentState.surveyQuestions.toMutableList()
+                            modifiedList[surveyQuestionIndex] =
+                                modifiedList[surveyQuestionIndex].copy(
+                                    answer = answer,
+                                    hasError = false
+                                )
+                            _surveyState.emit(
+                                currentState.copy(
+                                    surveyQuestions = modifiedList,
+                                    isLoading = false
+                                )
+                            )
+
+
+                        }
+                    }
+
+                }
+            }
+        }
+    }
 }
