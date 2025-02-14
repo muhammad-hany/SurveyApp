@@ -69,6 +69,7 @@ dependencies {
     implementation(libs.moshiConverterFactory)
     implementation(libs.moshKotlin)
     implementation(libs.loggingInterceptor)
+    implementation(libs.androidx.navigation.compose)
 
     testImplementation(libs.junit)
     testImplementation (libs.mockwebserver)

@@ -44,9 +44,7 @@ fun SurveyScreen(viewModel: HomeViewModel) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            HomeBar(
-                pagerState = pagerState
-            )
+            HomeBar(pagerState = pagerState)
         }
     ) { innerPadding ->
         Column(
@@ -67,7 +65,6 @@ fun SurveyScreen(viewModel: HomeViewModel) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Question(
     state: State<SurveyState>,

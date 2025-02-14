@@ -21,16 +21,19 @@ class HomeViewModel(
 
     private val _surveyState = MutableStateFlow(SurveyState())
     val surveyState = _surveyState.asStateFlow()
-    val currentState get() = _surveyState.value
+    private val currentState get() = _surveyState.value
 
 
     init {
+        getQuestions()
+    }
+
+    fun getQuestions() {
         viewModelScope.launch {
             repository.getQuestions().collectLatest { apiState ->
                 when (apiState) {
                     is ApiState.Error -> {
-                        _surveyState.emit(currentState.copy(isLoading = false))
-                        // TODO present error state
+                        _surveyState.emit(currentState.copy(isLoading = false, error = "issue happened while fetching survey"))
                     }
                     is ApiState.Loading -> {
                         _surveyState.emit(currentState.copy(isLoading = true))
@@ -40,7 +43,8 @@ class HomeViewModel(
                         _surveyState.emit(
                             currentState.copy(
                                 surveyQuestions = apiState.data.map { SurveyQuestion(it) },
-                                isLoading = false
+                                isLoading = false,
+                                error = null
                             )
                         )
                     }

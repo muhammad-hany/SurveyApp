@@ -1,14 +1,19 @@
-@file:OptIn(ExperimentalFoundationApi::class)
-
 package com.muhammad.hany.surveyapp
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.muhammad.hany.surveyapp.ui.HomeScreen
+import com.muhammad.hany.surveyapp.ui.LOCAL_NAVIGATOR
 import com.muhammad.hany.surveyapp.ui.SurveyScreen
+import com.muhammad.hany.surveyapp.ui.navigation.Home
+import com.muhammad.hany.surveyapp.ui.navigation.Survey
 import com.muhammad.hany.surveyapp.ui.theme.SurveyAppTheme
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -28,7 +33,17 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun SurveyApp(viewModel: HomeViewModel) {
-    SurveyScreen(viewModel)
+    val navController = rememberNavController()
+
+    CompositionLocalProvider(
+        LOCAL_NAVIGATOR provides navController
+    ) {
+        NavHost(navController = navController, startDestination = Home) {
+            composable(Home) { HomeScreen(viewModel) }
+            composable(Survey) { SurveyScreen(viewModel) }
+        }
+    }
+
 }
 
 
