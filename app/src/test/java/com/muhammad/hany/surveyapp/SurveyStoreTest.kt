@@ -8,8 +8,8 @@ import com.muhammad.hany.surveyapp.store.AnswerSuccess
 import com.muhammad.hany.surveyapp.store.SchedulerProvider
 import com.muhammad.hany.surveyapp.store.SurveyAction
 import com.muhammad.hany.surveyapp.store.SurveyEnvironment
-import com.muhammad.hany.surveyapp.ui.model.SurveyQuestion
 import com.muhammad.hany.surveyapp.store.SurveyState
+import com.muhammad.hany.surveyapp.ui.model.SurveyQuestion
 import com.muhammad.hany.surveyapp.ui.reducer
 import com.xm.tka.test.TestStore
 import io.mockk.every
@@ -57,6 +57,18 @@ class SurveyStoreTest {
             receive(SurveyAction.QuestionsLoaded(result)) {
                 it.copy(isLoading = false, surveyQuestions = listOf(SurveyQuestion(question)))
             }
+        }
+    }
+
+    @Test
+    fun `test getting questions while questions already in state`() {
+        val question = Question(id = 1, question = "test")
+        val surveyQuestion = SurveyQuestion(question)
+        val questions = listOf(surveyQuestion)
+        val state = SurveyState(surveyQuestions = questions)
+        TestStore(state, reducer, environment).assert {
+            // state shouldn't change
+            send(SurveyAction.GetQuestions)
         }
     }
 

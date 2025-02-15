@@ -15,6 +15,8 @@ fun SurveyAction.GetQuestions.reduced(
     state: SurveyState,
     env: SurveyEnvironment
 ): Reduced<SurveyState, SurveyAction> = with(context) {
+    // do nothing if questions already loaded
+    if (state.surveyQuestions.isNotEmpty()) return@with state + Effects.none()
     state.copy(
         isLoading = true
     ) + env.repository.getQuestions()
