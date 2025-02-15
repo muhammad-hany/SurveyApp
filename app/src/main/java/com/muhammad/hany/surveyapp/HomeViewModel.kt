@@ -2,7 +2,6 @@ package com.muhammad.hany.surveyapp
 
 import androidx.lifecycle.ViewModel
 import com.muhammad.hany.surveyapp.data.model.Answer
-import com.muhammad.hany.surveyapp.data.repository.Repository
 import com.muhammad.hany.surveyapp.ui.AnswerFailure
 import com.muhammad.hany.surveyapp.ui.SurveyAction
 import com.muhammad.hany.surveyapp.ui.SurveyEnvironment
@@ -15,17 +14,15 @@ import com.xm.tka.Reducer
 import com.xm.tka.Store
 import com.xm.tka.cancellable
 import com.xm.tka.toEffect
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.schedulers.Schedulers
 
 class HomeViewModel(
-    repository: Repository
+    environment: SurveyEnvironment
 ) : ViewModel() {
 
     val store = Store(
         initialState = SurveyState(),
         reducer = reducer,
-        environment = SurveyEnvironment(repository)
+        environment = environment
     )
 
 }
@@ -48,8 +45,8 @@ fun SurveyAction.GetQuestions.reduced(
     state.copy(
         isLoading = true
     ) + env.repository.getQuestions()
-        .subscribeOn(Schedulers.io())
-        .observeOn(AndroidSchedulers.mainThread())
+        .subscribeOn(env.schedulerProvider.ioThread())
+        .observeOn(env.schedulerProvider.mainThread())
         .map<SurveyAction> { SurveyAction.QuestionsLoaded(it) }
         .toEffect()
         .cancellable(QuestionLoading)
@@ -78,8 +75,8 @@ fun SurveyAction.SubmitAnswer.reduced(
     state.copy(
         isLoading = true
     ) + env.repository.submitAnswer(answer)
-        .subscribeOn(Schedulers.io())
-        .observeOn(AndroidSchedulers.mainThread())
+        .subscribeOn(env.schedulerProvider.ioThread())
+        .observeOn(env.schedulerProvider.mainThread())
         .map<SurveyAction> { SurveyAction.AnswerSubmitted(it) }
         .toEffect()
         .cancellable(AnswerSubmitting)

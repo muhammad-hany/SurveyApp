@@ -5,6 +5,9 @@ import com.muhammad.hany.surveyapp.data.api.SurveyApi
 import com.muhammad.hany.surveyapp.data.client.RetrofitClient
 import com.muhammad.hany.surveyapp.data.repository.Repository
 import com.muhammad.hany.surveyapp.data.repository.RepositoryImpl
+import com.muhammad.hany.surveyapp.ui.SchedulerProvider
+import com.muhammad.hany.surveyapp.ui.SchedulerProviderImpl
+import com.muhammad.hany.surveyapp.ui.SurveyEnvironment
 import com.squareup.moshi.Moshi
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -35,8 +38,19 @@ val appModule = module {
         RepositoryImpl(api = get())
     }
 
+    single<SchedulerProvider> {
+        SchedulerProviderImpl()
+    }
+
+    single {
+        SurveyEnvironment(
+            repository = get(),
+            schedulerProvider = get()
+        )
+    }
+
     viewModel {
-        HomeViewModel(repository = get())
+        HomeViewModel(environment = get())
     }
 
 }
