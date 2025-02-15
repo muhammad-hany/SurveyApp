@@ -20,20 +20,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.muhammad.hany.surveyapp.store.SurveyAction
-import com.muhammad.hany.surveyapp.store.SurveyState
+import com.muhammad.hany.surveyapp.store.HomeAction
+import com.muhammad.hany.surveyapp.store.HomeState
 import com.muhammad.hany.surveyapp.ui.LOCAL_NAVIGATOR
 import com.muhammad.hany.surveyapp.ui.navigation.Survey
 import com.xm.tka.ui.ViewStore
 
 @Composable
-fun HomeScreen(viewStore: ViewStore<SurveyState, SurveyAction>) {
+fun HomeScreen(viewStore: ViewStore<HomeState, HomeAction>) {
     val surveyState by viewStore.states.subscribeAsState(viewStore.currentState)
     val navController = LOCAL_NAVIGATOR.current
 
 
     LaunchedEffect(Unit) {
-        viewStore.send(SurveyAction.GetQuestions)
+        viewStore.send(HomeAction.GetQuestions)
     }
 
     Scaffold {
@@ -52,7 +52,7 @@ fun HomeScreen(viewStore: ViewStore<SurveyState, SurveyAction>) {
             )
             Spacer(Modifier.weight(1F))
             Button(
-                enabled = surveyState.surveyQuestions.isNotEmpty(),
+                enabled = surveyState.questions.isNotEmpty(),
                 onClick = {
                     navController.navigate(Survey)
                 },
@@ -64,7 +64,7 @@ fun HomeScreen(viewStore: ViewStore<SurveyState, SurveyAction>) {
             }
             if (!surveyState.error.isNullOrBlank()) {
                 Button(
-                    onClick = { viewStore.send(SurveyAction.GetQuestions) },
+                    onClick = { viewStore.send(HomeAction.GetQuestions) },
                     enabled = !surveyState.isLoading
                 ) {
                     Row(

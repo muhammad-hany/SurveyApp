@@ -7,5 +7,6 @@ import io.reactivex.rxjava3.core.Single
 
 interface Repository {
     fun getQuestions(): Single<Result<List<Question>>>
+    fun getInMemoryQuestions(): List<Question>
     fun submitAnswer(answer: Answer): Single<AnswerSubmission>
 }

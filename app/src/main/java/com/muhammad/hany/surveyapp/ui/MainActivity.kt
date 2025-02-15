@@ -39,8 +39,8 @@ fun SurveyApp(viewModel: HomeViewModel) {
         LOCAL_NAVIGATOR provides navController
     ) {
         SurveyAppNavigation(navController = navController) {
-            composable(Home) { HomeScreen(viewModel.store.view()) }
-            composable(Survey) { SurveyScreen(viewModel.store.view()) }
+            composable(Home) { HomeScreen(viewModel.store.homeScope().view()) }
+            composable(Survey) { SurveyScreen(viewModel.store.surveyScope().view()) }
         }
     }
 

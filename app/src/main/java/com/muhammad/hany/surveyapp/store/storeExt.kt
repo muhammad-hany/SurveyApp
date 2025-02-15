@@ -10,19 +10,19 @@ import com.xm.tka.Reduced
 import com.xm.tka.cancellable
 import com.xm.tka.toEffect
 
-fun SurveyAction.GetQuestions.reduced(
-    context: ReduceContext<SurveyState, SurveyAction>,
-    state: SurveyState,
+fun HomeAction.GetQuestions.reduced(
+    context: ReduceContext<HomeState, HomeAction>,
+    state: HomeState,
     env: SurveyEnvironment
-): Reduced<SurveyState, SurveyAction> = with(context) {
+): Reduced<HomeState, HomeAction> = with(context) {
     // do nothing if questions already loaded
-    if (state.surveyQuestions.isNotEmpty()) return@with state + Effects.none()
+    if (state.questions.isNotEmpty()) return@with state + Effects.none()
     state.copy(
         isLoading = true
     ) + env.repository.getQuestions()
         .subscribeOn(env.schedulerProvider.ioThread())
         .observeOn(env.schedulerProvider.mainThread())
-        .map<SurveyAction> { SurveyAction.QuestionsLoaded(it) }
+        .map<HomeAction> { HomeAction.QuestionsLoaded(it) }
         .toEffect()
         .cancellable(QuestionLoading)
 }
@@ -57,14 +57,14 @@ fun SurveyAction.SubmitAnswer.reduced(
         .cancellable(AnswerSubmitting)
 }
 
-fun SurveyAction.QuestionsLoaded.reduced(
-    context: ReduceContext<SurveyState, SurveyAction>,
-    state: SurveyState,
-): Reduced<SurveyState, SurveyAction> = with(context) {
+fun HomeAction.QuestionsLoaded.reduced(
+    context: ReduceContext<HomeState, HomeAction>,
+    state: HomeState,
+): Reduced<HomeState, HomeAction> = with(context) {
     result.fold(
         onSuccess = { data ->
             state.copy(
-                surveyQuestions = data.map { SurveyQuestion(it) },
+                questions = data,
                 isLoading = false,
                 error = null
             ) + Effects.none()
@@ -77,6 +77,32 @@ fun SurveyAction.QuestionsLoaded.reduced(
         }
     )
 }
+
+fun SurveyAction.CreateNewSurvey.reduced(
+    context: ReduceContext<SurveyState, SurveyAction>,
+    state: SurveyState,
+    env: SurveyEnvironment
+): Reduced<SurveyState, SurveyAction> = with(context) {
+    if (state.surveyQuestions.isNotEmpty()) return@with state + Effects.none()
+    state + Effects.just(
+        SurveyAction.SurveyLoaded(
+            env.repository
+                .getInMemoryQuestions()
+                .map { SurveyQuestion(it) }
+        )
+    )
+}
+
+fun SurveyAction.SurveyLoaded.reduced(
+    context: ReduceContext<SurveyState, SurveyAction>,
+    state: SurveyState
+): Reduced<SurveyState, SurveyAction> = with(context) {
+    state.copy(
+        surveyQuestions = surveyQuestions,
+        isLoading = false
+    ) + Effects.none()
+}
+
 
 fun SurveyAction.AnswerSubmitted.reduced(
     context: ReduceContext<SurveyState, SurveyAction>,

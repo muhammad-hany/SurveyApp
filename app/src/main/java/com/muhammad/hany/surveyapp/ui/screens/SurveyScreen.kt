@@ -18,6 +18,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,10 +37,16 @@ import com.xm.tka.ui.ViewStore
 
 
 @Composable
-fun SurveyScreen(viewStore: ViewStore<SurveyState, SurveyAction>) {
+fun SurveyScreen(
+    viewStore: ViewStore<SurveyState, SurveyAction>
+) {
     val surveyState by viewStore.states.subscribeAsState(viewStore.currentState)
     val pagerState = rememberPagerState(pageCount = { surveyState.surveyQuestions.size })
     val navController = LOCAL_NAVIGATOR.current
+
+    LaunchedEffect(Unit) {
+        viewStore.send(SurveyAction.CreateNewSurvey)
+    }
 
 
     Scaffold(
