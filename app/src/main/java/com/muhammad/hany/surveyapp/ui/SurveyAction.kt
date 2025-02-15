@@ -11,7 +11,9 @@ sealed class SurveyAction {
     data class AnswerSubmitted(val result: AnswerSubmission): SurveyAction()
 }
 
-sealed class AnswerSubmission(val answer: Answer) {
-    data class Success(val successAnswer: Answer) : AnswerSubmission(successAnswer)
-    data class Failure(val error: Throwable, val failedAnswer: Answer) : AnswerSubmission(failedAnswer)
+sealed interface AnswerSubmission {
+    val answer: Answer
 }
+
+data class AnswerSuccess(override val answer: Answer) : AnswerSubmission
+data class AnswerFailure(val error: Throwable, override val answer: Answer) : AnswerSubmission

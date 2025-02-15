@@ -3,7 +3,9 @@ package com.muhammad.hany.surveyapp.data.repository
 import com.muhammad.hany.surveyapp.data.api.SurveyApi
 import com.muhammad.hany.surveyapp.data.model.Answer
 import com.muhammad.hany.surveyapp.data.model.Question
+import com.muhammad.hany.surveyapp.ui.AnswerFailure
 import com.muhammad.hany.surveyapp.ui.AnswerSubmission
+import com.muhammad.hany.surveyapp.ui.AnswerSuccess
 import io.reactivex.rxjava3.core.Single
 
 class RepositoryImpl(private val api: SurveyApi) : Repository {
@@ -16,8 +18,8 @@ class RepositoryImpl(private val api: SurveyApi) : Repository {
 
     override fun submitAnswer(answer: Answer): Single<AnswerSubmission> {
         return api.submitAnswer(answer)
-            .map<AnswerSubmission> { AnswerSubmission.Success(answer) }
-            .onErrorReturn { AnswerSubmission.Failure(it, answer) }
+            .map<AnswerSubmission> { AnswerSuccess(answer) }
+            .onErrorReturn { AnswerFailure(it, answer) }
     }
 
 }
