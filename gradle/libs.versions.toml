@@ -61,6 +61,9 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 rxandroid = { module = "io.reactivex.rxjava3:rxandroid", version.ref = "rxandroid" }
 rxkotlin = { module = "io.reactivex.rxjava3:rxkotlin", version.ref = "rxkotlin" }
 trading-point-kotlin-composable-architecture = { module = "com.github.trading-point:kotlin-composable-architecture", version.ref = "kotlinComposableArchitectureVersion" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+truth = { module = "com.google.truth:truth", version.ref = "truth" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
