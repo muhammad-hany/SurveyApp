@@ -1,4 +1,4 @@
-package com.muhammad.hany.surveyapp.ui
+package com.muhammad.hany.surveyapp.store
 
 import io.reactivex.rxjava3.core.Scheduler
 

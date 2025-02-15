@@ -4,8 +4,8 @@ import com.muhammad.hany.surveyapp.data.api.SurveyApi
 import com.muhammad.hany.surveyapp.data.model.Answer
 import com.muhammad.hany.surveyapp.data.model.Question
 import com.muhammad.hany.surveyapp.data.repository.RepositoryImpl
-import com.muhammad.hany.surveyapp.ui.AnswerFailure
-import com.muhammad.hany.surveyapp.ui.AnswerSuccess
+import com.muhammad.hany.surveyapp.store.AnswerFailure
+import com.muhammad.hany.surveyapp.store.AnswerSuccess
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify

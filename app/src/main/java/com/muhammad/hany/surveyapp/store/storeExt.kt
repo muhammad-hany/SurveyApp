@@ -1,41 +1,14 @@
-package com.muhammad.hany.surveyapp
+package com.muhammad.hany.surveyapp.store
 
-import androidx.lifecycle.ViewModel
 import com.muhammad.hany.surveyapp.data.model.Answer
-import com.muhammad.hany.surveyapp.ui.AnswerFailure
-import com.muhammad.hany.surveyapp.ui.SurveyAction
-import com.muhammad.hany.surveyapp.ui.SurveyEnvironment
+import com.muhammad.hany.surveyapp.ui.AnswerSubmitting
+import com.muhammad.hany.surveyapp.ui.QuestionLoading
 import com.muhammad.hany.surveyapp.ui.model.SurveyQuestion
-import com.muhammad.hany.surveyapp.ui.model.SurveyState
 import com.xm.tka.Effects
 import com.xm.tka.ReduceContext
 import com.xm.tka.Reduced
-import com.xm.tka.Reducer
-import com.xm.tka.Store
 import com.xm.tka.cancellable
 import com.xm.tka.toEffect
-
-class HomeViewModel(
-    environment: SurveyEnvironment
-) : ViewModel() {
-
-    val store = Store(
-        initialState = SurveyState(),
-        reducer = reducer,
-        environment = environment
-    )
-
-}
-
-val reducer = Reducer<SurveyState, SurveyAction, SurveyEnvironment> { state, action, env ->
-    when (action) {
-        is SurveyAction.GetQuestions -> action.reduced(this, state, env)
-        is SurveyAction.ResetQuestion -> action.reduced(this, state)
-        is SurveyAction.SubmitAnswer -> action.reduced(this, state, env)
-        is SurveyAction.QuestionsLoaded -> action.reduced(this, state)
-        is SurveyAction.AnswerSubmitted -> action.reduced(this, state)
-    }
-}
 
 fun SurveyAction.GetQuestions.reduced(
     context: ReduceContext<SurveyState, SurveyAction>,
@@ -128,8 +101,3 @@ fun List<SurveyQuestion>.updatedWith(answer: Answer, hasError: Boolean): List<Su
             this[surveyQuestionIndex].copy(answer = answer, hasError = hasError)
     }
 }
-
-object QuestionLoading
-object AnswerSubmitting
-
-

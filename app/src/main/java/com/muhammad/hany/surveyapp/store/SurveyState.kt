@@ -1,4 +1,6 @@
-package com.muhammad.hany.surveyapp.ui.model
+package com.muhammad.hany.surveyapp.store
+
+import com.muhammad.hany.surveyapp.ui.model.SurveyQuestion
 
 data class SurveyState(
     val surveyQuestions: List<SurveyQuestion> = emptyList(),

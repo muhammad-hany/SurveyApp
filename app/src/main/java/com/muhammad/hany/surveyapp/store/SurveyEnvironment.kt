@@ -1,4 +1,4 @@
-package com.muhammad.hany.surveyapp.ui
+package com.muhammad.hany.surveyapp.store
 
 import com.muhammad.hany.surveyapp.data.repository.Repository
 

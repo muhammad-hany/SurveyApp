@@ -1,4 +1,4 @@
-package com.muhammad.hany.surveyapp
+package com.muhammad.hany.surveyapp.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -9,9 +9,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.muhammad.hany.surveyapp.ui.HomeScreen
-import com.muhammad.hany.surveyapp.ui.LOCAL_NAVIGATOR
-import com.muhammad.hany.surveyapp.ui.SurveyScreen
+import com.muhammad.hany.surveyapp.ui.screens.HomeScreen
+import com.muhammad.hany.surveyapp.ui.screens.SurveyScreen
 import com.muhammad.hany.surveyapp.ui.navigation.Home
 import com.muhammad.hany.surveyapp.ui.navigation.Survey
 import com.muhammad.hany.surveyapp.ui.theme.SurveyAppTheme

@@ -1,4 +1,4 @@
-package com.muhammad.hany.surveyapp.ui
+package com.muhammad.hany.surveyapp.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,7 +20,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.muhammad.hany.surveyapp.ui.model.SurveyState
+import com.muhammad.hany.surveyapp.store.SurveyAction
+import com.muhammad.hany.surveyapp.store.SurveyState
+import com.muhammad.hany.surveyapp.ui.LOCAL_NAVIGATOR
 import com.muhammad.hany.surveyapp.ui.navigation.Survey
 import com.xm.tka.ui.ViewStore
 

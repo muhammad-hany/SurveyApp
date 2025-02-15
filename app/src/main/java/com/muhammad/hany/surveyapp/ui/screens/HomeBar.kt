@@ -1,4 +1,4 @@
-package com.muhammad.hany.surveyapp.ui
+package com.muhammad.hany.surveyapp.ui.screens
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
