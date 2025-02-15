@@ -53,7 +53,7 @@ private val surveyReducer = Reducer<SurveyState, SurveyAction, SurveyEnvironment
     }
 }
 
-private val globalReducer: Reducer<GlobalState, GlobalAction, SurveyEnvironment> = Reducer.combine(
+val globalReducer: Reducer<GlobalState, GlobalAction, SurveyEnvironment> = Reducer.combine(
     homeReducer.pullback(
         toLocalState = StateLens(
             set = { state, update -> state.copy(home = update) },

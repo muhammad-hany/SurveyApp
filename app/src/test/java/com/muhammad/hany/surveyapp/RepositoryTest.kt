@@ -1,5 +1,6 @@
 package com.muhammad.hany.surveyapp
 
+import com.google.common.truth.Truth.assertThat
 import com.muhammad.hany.surveyapp.data.api.SurveyApi
 import com.muhammad.hany.surveyapp.data.model.Answer
 import com.muhammad.hany.surveyapp.data.model.Question
@@ -54,6 +55,21 @@ class RepositoryTest {
         val observer = repository.getQuestions().test()
         observer.await()
         observer.assertComplete().onError(exception)
+    }
+
+    @Test
+    fun testGetInMemoryQuestions() {
+        val questions = listOf(Question(1, "What is your name?"))
+        every { apiService.getQuestions() } returns Single.just(questions)
+        val observer = repository.getQuestions().test()
+        observer.await()
+        observer.assertComplete()
+            .assertNoErrors()
+            .assertValue { result ->
+                result.isSuccess && result.getOrNull() == questions
+            }
+        verify { apiService.getQuestions() }
+        assertThat(repository.getInMemoryQuestions()).isEqualTo(questions)
     }
 
     @Test

@@ -5,12 +5,16 @@ import com.muhammad.hany.surveyapp.data.model.Question
 import com.muhammad.hany.surveyapp.data.repository.Repository
 import com.muhammad.hany.surveyapp.store.AnswerFailure
 import com.muhammad.hany.surveyapp.store.AnswerSuccess
+import com.muhammad.hany.surveyapp.store.GlobalAction
+import com.muhammad.hany.surveyapp.store.GlobalState
+import com.muhammad.hany.surveyapp.store.HomeAction
+import com.muhammad.hany.surveyapp.store.HomeState
 import com.muhammad.hany.surveyapp.store.SchedulerProvider
 import com.muhammad.hany.surveyapp.store.SurveyAction
 import com.muhammad.hany.surveyapp.store.SurveyEnvironment
 import com.muhammad.hany.surveyapp.store.SurveyState
+import com.muhammad.hany.surveyapp.ui.globalReducer
 import com.muhammad.hany.surveyapp.ui.model.SurveyQuestion
-import com.muhammad.hany.surveyapp.ui.reducer
 import com.xm.tka.test.TestStore
 import io.mockk.every
 import io.mockk.mockk
@@ -26,7 +30,7 @@ class SurveyStoreTest {
 
     private val repository: Repository = mockk()
     private val schedulerProvider: SchedulerProvider = mockk()
-    private val state = SurveyState()
+    private val state = GlobalState()
     private val environment = SurveyEnvironment(repository, schedulerProvider)
 
     private val testScheduler = TestScheduler()
@@ -48,14 +52,19 @@ class SurveyStoreTest {
     fun testGettingQuestions() {
         val question = Question(id = 1, question = "test")
         every { repository.getQuestions() } returns Single.just(Result.success(listOf(question)))
-        TestStore(state, reducer, environment).assert {
-            send(SurveyAction.GetQuestions) {
-                it.copy(isLoading = true)
+        TestStore(state, globalReducer, environment).assert {
+            send(GlobalAction.Home(HomeAction.GetQuestions)) {
+                it.copy(home = it.home.copy(isLoading = true))
             }
             testScheduler.advanceTimeBy(10, TimeUnit.MILLISECONDS)
             val result = Result.success(listOf(question))
-            receive(SurveyAction.QuestionsLoaded(result)) {
-                it.copy(isLoading = false, surveyQuestions = listOf(SurveyQuestion(question)))
+            receive(GlobalAction.Home(HomeAction.QuestionsLoaded(result))) {
+                it.copy(
+                    home = it.home.copy(
+                        isLoading = false,
+                        questions = listOf(question)
+                    )
+                )
             }
         }
     }
@@ -63,12 +72,11 @@ class SurveyStoreTest {
     @Test
     fun `test getting questions while questions already in state`() {
         val question = Question(id = 1, question = "test")
-        val surveyQuestion = SurveyQuestion(question)
-        val questions = listOf(surveyQuestion)
-        val state = SurveyState(surveyQuestions = questions)
-        TestStore(state, reducer, environment).assert {
+        val questions = listOf(question)
+        val state = GlobalState(home = HomeState(questions = questions))
+        TestStore(state, globalReducer, environment).assert {
             // state shouldn't change
-            send(SurveyAction.GetQuestions)
+            send(GlobalAction.Home(HomeAction.GetQuestions))
         }
     }
 
@@ -76,13 +84,42 @@ class SurveyStoreTest {
     fun `test getting questions while error happened`() {
         val exception = Exception()
         every { repository.getQuestions() } returns Single.just(Result.failure(exception))
-        TestStore(state, reducer, environment).assert {
-            send(SurveyAction.GetQuestions) {
-                it.copy(isLoading = true)
+        TestStore(state, globalReducer, environment).assert {
+            send(GlobalAction.Home(HomeAction.GetQuestions)) {
+                it.copy(
+                    home = it.home.copy(
+                        isLoading = true
+                    )
+                )
             }
             testScheduler.advanceTimeBy(10, TimeUnit.MILLISECONDS)
-            receive(SurveyAction.QuestionsLoaded(Result.failure(exception))) {
-                it.copy(isLoading = false, error = "issue happened while fetching survey")
+            receive(GlobalAction.Home(HomeAction.QuestionsLoaded(Result.failure(exception)))) {
+                it.copy(
+                    home = it.home.copy(
+                        isLoading = false,
+                        error = "issue happened while fetching survey"
+                    )
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `test creating new survey`() {
+        val question = Question(id = 1, question = "test")
+        val questions = listOf(question)
+        val state = GlobalState(home = HomeState(questions = questions))
+        every { repository.getInMemoryQuestions() } returns questions
+        val surveyQuestions = listOf(SurveyQuestion(question))
+
+        TestStore(state, globalReducer, environment).assert {
+            send(GlobalAction.Survey(SurveyAction.CreateNewSurvey))
+            receive(GlobalAction.Survey(SurveyAction.SurveyLoaded(surveyQuestions))) {
+                it.copy(
+                    survey = it.survey.copy(
+                        surveyQuestions = surveyQuestions
+                    )
+                )
             }
         }
     }
@@ -94,17 +131,24 @@ class SurveyStoreTest {
         val question = Question(id = 1, question = "test")
         val surveyQuestion = SurveyQuestion(question)
         val questions = listOf(surveyQuestion)
-        val state = SurveyState(surveyQuestions = questions)
+        val surveyState = SurveyState(surveyQuestions = questions)
+        val state = GlobalState(survey = surveyState)
         every { repository.submitAnswer(answer) } returns Single.just(successAnswer)
-        TestStore(state, reducer, environment).assert {
-            send(SurveyAction.SubmitAnswer(answer.answerText, answer.id)) {
-                it.copy(isLoading = true)
+        TestStore(state, globalReducer, environment).assert {
+            send(GlobalAction.Survey(SurveyAction.SubmitAnswer(answer.answerText, answer.id))) {
+                it.copy(
+                    survey = it.survey.copy(
+                        isLoading = true
+                    )
+                )
             }
             testScheduler.advanceTimeBy(10, TimeUnit.MILLISECONDS)
-            receive(SurveyAction.AnswerSubmitted(successAnswer)) {
+            receive(GlobalAction.Survey(SurveyAction.AnswerSubmitted(successAnswer))) {
                 it.copy(
-                    isLoading = false,
-                    surveyQuestions = listOf(surveyQuestion.copy(answer = answer, hasError = false))
+                    survey = it.survey.copy(
+                        isLoading = false,
+                        surveyQuestions = listOf(surveyQuestion.copy(answer = answer, hasError = false))
+                    )
                 )
             }
         }
@@ -119,17 +163,24 @@ class SurveyStoreTest {
         val question = Question(id = 1, question = "test")
         val surveyQuestion = SurveyQuestion(question)
         val questions = listOf(surveyQuestion)
-        val state = SurveyState(surveyQuestions = questions)
+        val surveyState = SurveyState(surveyQuestions = questions)
+        val state = GlobalState(survey = surveyState)
         every { repository.submitAnswer(answer) } returns Single.just(failureAnswer)
-        TestStore(state, reducer, environment).assert {
-            send(SurveyAction.SubmitAnswer(answer.answerText, answer.id)) {
-                it.copy(isLoading = true)
+        TestStore(state, globalReducer, environment).assert {
+            send(GlobalAction.Survey(SurveyAction.SubmitAnswer(answer.answerText, answer.id))) {
+                it.copy(
+                    survey = it.survey.copy(
+                        isLoading = true
+                    )
+                )
             }
             testScheduler.advanceTimeBy(10, TimeUnit.MILLISECONDS)
-            receive(SurveyAction.AnswerSubmitted(failureAnswer)) {
+            receive(GlobalAction.Survey(SurveyAction.AnswerSubmitted(failureAnswer))) {
                 it.copy(
-                    isLoading = false,
-                    surveyQuestions = listOf(surveyQuestion.copy(answer = answer, hasError = true))
+                    survey = it.survey.copy(
+                        isLoading = false,
+                        surveyQuestions = listOf(surveyQuestion.copy(answer = answer, hasError = true))
+                    )
                 )
             }
         }
@@ -141,17 +192,19 @@ class SurveyStoreTest {
         val question = Question(id = 1, question = "test")
         val surveyQuestion = SurveyQuestion(question, answer, hasError = true)
         val questions = listOf(surveyQuestion)
-        val state = SurveyState(surveyQuestions = questions)
-
-        TestStore(state, reducer, environment).assert {
-            send(SurveyAction.ResetQuestion) {
+        val surveyState = SurveyState(surveyQuestions = questions)
+        val state = GlobalState(survey = surveyState)
+        TestStore(state, globalReducer, environment).assert {
+            send(GlobalAction.Survey(SurveyAction.ResetQuestion)) {
                 it.copy(
-                    surveyQuestions = it.surveyQuestions.map { surveyQuestion ->
-                        surveyQuestion.copy(
-                            answer = null,
-                            hasError = false
-                        )
-                    }
+                    survey = it.survey.copy(
+                        surveyQuestions = it.survey.surveyQuestions.map { surveyQuestion ->
+                            surveyQuestion.copy(
+                                answer = null,
+                                hasError = false
+                            )
+                        }
+                    )
                 )
             }
         }
