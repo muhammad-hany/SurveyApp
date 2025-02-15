@@ -15,6 +15,7 @@ import com.muhammad.hany.surveyapp.ui.SurveyScreen
 import com.muhammad.hany.surveyapp.ui.navigation.Home
 import com.muhammad.hany.surveyapp.ui.navigation.Survey
 import com.muhammad.hany.surveyapp.ui.theme.SurveyAppTheme
+import com.xm.tka.ui.ViewStore.Companion.view
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : ComponentActivity() {
@@ -39,8 +40,8 @@ fun SurveyApp(viewModel: HomeViewModel) {
         LOCAL_NAVIGATOR provides navController
     ) {
         NavHost(navController = navController, startDestination = Home) {
-            composable(Home) { HomeScreen(viewModel) }
-            composable(Survey) { SurveyScreen(viewModel) }
+            composable(Home) { HomeScreen(viewModel.store.view()) }
+            composable(Survey) { SurveyScreen(viewModel.store.view()) }
         }
     }
 

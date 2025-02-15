@@ -29,9 +29,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeBar(
     pagerState: PagerState,
-    numberOfAnsweredQuestions: Int
+    numberOfAnsweredQuestions: Int,
+    onBackPressed: () -> Unit
 ) {
-    val navController = LOCAL_NAVIGATOR.current
     val coroutineScope = rememberCoroutineScope()
     TopAppBar(
         title = {
@@ -47,7 +47,7 @@ fun HomeBar(
             titleContentColor = MaterialTheme.colorScheme.onPrimary,
         ),
         navigationIcon = {
-            IconButton(onClick = { navController.navigateUp() }) {
+            IconButton(onClick = onBackPressed) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
                     contentDescription = stringResource(R.string.menu),

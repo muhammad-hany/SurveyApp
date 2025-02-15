@@ -1,13 +1,11 @@
 package com.muhammad.hany.surveyapp.data.repository
 
 import com.muhammad.hany.surveyapp.data.model.Answer
-import com.muhammad.hany.surveyapp.data.model.ApiState
 import com.muhammad.hany.surveyapp.data.model.Question
-import kotlinx.coroutines.flow.Flow
+import com.muhammad.hany.surveyapp.ui.AnswerSubmission
+import io.reactivex.rxjava3.core.Single
 
 interface Repository {
-
-    suspend fun getQuestions(): Flow<ApiState<List<Question>>>
-
-    suspend fun submitAnswer(answer: Answer): Flow<ApiState<Unit>>
+    fun getQuestions(): Single<Result<List<Question>>>
+    fun submitAnswer(answer: Answer): Single<AnswerSubmission>
 }

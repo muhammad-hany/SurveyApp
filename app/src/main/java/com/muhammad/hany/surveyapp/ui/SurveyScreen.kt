@@ -22,26 +22,34 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rxjava3.subscribeAsState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.muhammad.hany.surveyapp.HomeViewModel
 import com.muhammad.hany.surveyapp.ui.model.SurveyQuestion
 import com.muhammad.hany.surveyapp.ui.model.SurveyState
+import com.xm.tka.ui.ViewStore
 
 
 @Composable
-fun SurveyScreen(viewModel: HomeViewModel) {
-    val surveyState by viewModel.surveyState.collectAsStateWithLifecycle()
+fun SurveyScreen(viewStore: ViewStore<SurveyState, SurveyAction>) {
+    val surveyState by viewStore.states.subscribeAsState(viewStore.currentState)
     val pagerState = rememberPagerState(pageCount = { surveyState.surveyQuestions.size })
+    val navController = LOCAL_NAVIGATOR.current
+
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            HomeBar(pagerState = pagerState, surveyState.answeredQuestionsCount)
+            HomeBar(
+                pagerState = pagerState,
+                numberOfAnsweredQuestions = surveyState.answeredQuestionsCount,
+                onBackPressed = {
+                    navController.navigateUp()
+                    viewStore.send(SurveyAction.ResetQuestion)
+                })
         }
     ) { innerPadding ->
         Column(
@@ -55,7 +63,7 @@ fun SurveyScreen(viewModel: HomeViewModel) {
             Question(
                 state = surveyState,
                 pagerState = pagerState,
-                onAnswer = viewModel::submitAnswer,
+                onAnswer = { answer, id -> viewStore.send(SurveyAction.SubmitAnswer(answer, id)) },
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -146,7 +154,12 @@ fun QuestionResponse(survey: SurveyQuestion, onRetry: (String, Int) -> Unit) {
             contentColor = Color.Black
         ) {
             Row {
-                Text(text = statusText, modifier = Modifier.padding(16.dp).align(Alignment.CenterVertically))
+                Text(
+                    text = statusText,
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .align(Alignment.CenterVertically)
+                )
                 if (canRetry) {
                     Button(onClick = {
                         if (survey.answer?.answerText != null && survey.question.id != null) {

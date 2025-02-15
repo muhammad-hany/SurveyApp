@@ -71,6 +71,13 @@ dependencies {
     implementation(libs.loggingInterceptor)
     implementation(libs.androidx.navigation.compose)
 
+    implementation(libs.trading.point.kotlin.composable.architecture)
+    implementation(libs.retrofit.rx)
+    implementation(libs.rxkotlin)
+    implementation(libs.rxandroid)
+    implementation(libs.androidx.runtime.rxjava3)
+
+
     testImplementation(libs.junit)
     testImplementation (libs.mockwebserver)
     testImplementation (libs.robolectric)

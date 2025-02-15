@@ -2,29 +2,22 @@ package com.muhammad.hany.surveyapp.data.repository
 
 import com.muhammad.hany.surveyapp.data.api.SurveyApi
 import com.muhammad.hany.surveyapp.data.model.Answer
-import com.muhammad.hany.surveyapp.data.model.ApiState
 import com.muhammad.hany.surveyapp.data.model.Question
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import com.muhammad.hany.surveyapp.ui.AnswerSubmission
+import io.reactivex.rxjava3.core.Single
 
 class RepositoryImpl(private val api: SurveyApi) : Repository {
 
-    override suspend fun getQuestions(): Flow<ApiState<List<Question>>> = flow {
-        emit(ApiState.Loading)
-        val response = api.getQuestions()
-        emit(ApiState.Success(response))
-    }.catch {
-        emit(ApiState.Error(it))
-    }.flowOn(Dispatchers.IO)
+    override fun getQuestions(): Single<Result<List<Question>>> {
+        return api.getQuestions()
+            .map { Result.success(it) }
+            .onErrorReturn { Result.failure(it) }
+    }
 
-    override suspend fun submitAnswer(answer: Answer): Flow<ApiState<Unit>> = flow {
-        emit(ApiState.Loading)
-        val response = api.submitAnswer(answer)
-        emit(ApiState.Success(response))
-    }.catch {
-        emit(ApiState.Error(it))
-    }.flowOn(Dispatchers.IO)
+    override fun submitAnswer(answer: Answer): Single<AnswerSubmission> {
+        return api.submitAnswer(answer)
+            .map<AnswerSubmission> { AnswerSubmission.Success(answer) }
+            .onErrorReturn { AnswerSubmission.Failure(it, answer) }
+    }
+
 }

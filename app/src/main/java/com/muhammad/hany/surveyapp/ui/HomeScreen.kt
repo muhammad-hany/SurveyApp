@@ -13,19 +13,26 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rxjava3.subscribeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.muhammad.hany.surveyapp.HomeViewModel
+import com.muhammad.hany.surveyapp.ui.model.SurveyState
 import com.muhammad.hany.surveyapp.ui.navigation.Survey
+import com.xm.tka.ui.ViewStore
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel) {
-    val surveyState by viewModel.surveyState.collectAsStateWithLifecycle()
+fun HomeScreen(viewStore: ViewStore<SurveyState, SurveyAction>) {
+    val surveyState by viewStore.states.subscribeAsState(viewStore.currentState)
     val navController = LOCAL_NAVIGATOR.current
+
+
+    LaunchedEffect(Unit) {
+        viewStore.send(SurveyAction.GetQuestions)
+    }
 
     Scaffold {
         Column(
@@ -54,7 +61,10 @@ fun HomeScreen(viewModel: HomeViewModel) {
                 Text("Start Survey", fontSize = 20.sp)
             }
             if (!surveyState.error.isNullOrBlank()) {
-                Button(onClick = { viewModel.getQuestions() }, enabled = !surveyState.isLoading) {
+                Button(
+                    onClick = { viewStore.send(SurveyAction.GetQuestions) },
+                    enabled = !surveyState.isLoading
+                ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
